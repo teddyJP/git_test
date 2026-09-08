@@ -36,6 +36,7 @@ pt = pt.replace('logger::info("GetOverlay request {}, result {}, dur:{}, isFemal
                 'logger::info("Bridge GetOverlay request {}", id);')
 pt = pt.replace('std::uniform_int_distribution<> distr(0, (ovrl->overlays.size() - 1));',
                 'std::uniform_int_distribution<size_t> distr(0, ovrl->overlays.size() - 1);')
+pt = pt.replace('int rnd = distr(gen);', 'size_t rnd = distr(gen);')
 ae_pap.write_text(pt, encoding='utf-8', newline='\n')
 
 # Hard-code the Bridge script name instead of depending on the old Forms.h macro.
