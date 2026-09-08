@@ -1,0 +1,30 @@
+name: NAF Bridge 1.11.240 experimental build
+on:
+  push:
+    branches: [naf-bridge-240-build]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build merged NAF Bridge
+        run: python naf-bridge-build/port.py
+      - name: Inspect exports
+        if: success()
+        shell: pwsh
+        run: |
+          dumpbin /exports out/NAF.dll | Out-File -Encoding utf8 out/exports.txt
+          Get-Content out/exports.txt
+      - name: Upload candidate and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: naf-bridge-240-build
+          path: |
+            out/**
+            work/naf/f4se-plugin/build-240/**/*.log
+            work/naf/f4se-plugin/build-240/CMakeCache.txt
+          if-no-files-found: warn
