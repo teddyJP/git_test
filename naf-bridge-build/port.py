@@ -191,6 +191,12 @@ t = global_h.read_text(encoding='utf-8-sig')
 t = t.replace('logger::info("Patched {} HeadParts.", count);', 'logger::info("Patched {} HeadParts.", count.load());')
 global_h.write_text(t, encoding='utf-8', newline='\n')
 
+# VS 18 promotes this legacy IK narrowing warning to an error under /WX; make the conversion explicit.
+ik_h = PLUGIN / 'src' / 'BodyAnimation' / 'IK.h'
+t = ik_h.read_text(encoding='utf-8-sig')
+t = t.replace('ik.vec3.mul_scalar(dir.f, segmentLength);', 'ik.vec3.mul_scalar(dir.f, static_cast<ikreal_t>(segmentLength));')
+ik_h.write_text(t, encoding='utf-8', newline='\n')
+
 os.environ['VCPKG_ROOT'] = os.environ.get('VCPKG_INSTALLATION_ROOT', r'C:\\vcpkg')
 build = PLUGIN / 'build-240'
 run(['cmake','-S',str(PLUGIN),'-B',str(build),'-G','Visual Studio 18 2026','-A','x64','-DCOPY_BUILD=OFF'])
