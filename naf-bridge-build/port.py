@@ -66,6 +66,8 @@ if engine.exists():
 manifest = PLUGIN / 'vcpkg.json'
 j = json.loads(manifest.read_text(encoding='utf-8-sig'))
 if 'rapidcsv' not in j['dependencies']: j['dependencies'].append('rapidcsv')
+j['dependencies'] = [('rsm-mmio' if x == 'mmio' else x) for x in j['dependencies']]
+j['builtin-baseline'] = '4cfabe769eaceb209ea37267e8c50c43b86a4a7b'
 manifest.write_text(json.dumps(j, indent=2) + '\n', encoding='utf-8')
 
 pap = bridge_dst / 'Papyrus' / 'Papyrus.cpp'
@@ -76,7 +78,7 @@ pap.write_text(t, encoding='utf-8', newline='\n')
 
 os.environ['VCPKG_ROOT'] = os.environ.get('VCPKG_INSTALLATION_ROOT', r'C:\\vcpkg')
 build = PLUGIN / 'build-240'
-run(['cmake','-S',str(PLUGIN),'-B',str(build),'-G','Visual Studio 17 2022','-A','x64','-DCOPY_BUILD=OFF'])
+run(['cmake','-S',str(PLUGIN),'-B',str(build),'-G','Visual Studio 18 2026','-A','x64','-DCOPY_BUILD=OFF'])
 run(['cmake','--build',str(build),'--config','Release','--target','NAF','--','/m'])
 
 dlls = [p for p in build.rglob('NAF.dll') if 'Release' in p.parts]
