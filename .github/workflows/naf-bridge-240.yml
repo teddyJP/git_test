@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build merged NAF Bridge
-        run: python naf-bridge-build/port.py
+        run: python naf-bridge-build/port_fix.py
       - name: Inspect exports
         if: success()
         shell: pwsh
