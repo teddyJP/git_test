@@ -40,6 +40,7 @@ if 'extern/Bridge/Papyrus/Papyrus.cpp' not in cmake:
         '\t${CMAKE_CURRENT_SOURCE_DIR}/extern/Bridge/Papyrus/Papyrus.cpp\n'
         '\t${CMAKE_CURRENT_SOURCE_DIR}/extern/Bridge/Papyrus/NAF_Utils.cpp\n'
         '\t${CMAKE_CURRENT_BINARY_DIR}/version.rc')
+cmake = cmake.replace('find_package(libzippp 3.0 REQUIRED)', 'find_package(libzippp REQUIRED CONFIG)')
 cmake_path.write_text(cmake, encoding='utf-8', newline='\n')
 
 for p in PLUGIN.rglob('*'):
