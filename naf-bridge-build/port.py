@@ -77,6 +77,120 @@ if 'PAPYRUS_BIND(GetLoaded3dFlags)' not in t:
     t = t.replace('PAPYRUS_BIND(Update3DPosition);','PAPYRUS_BIND(Update3DPosition);\n\t\tPAPYRUS_BIND(GetLoaded3dFlags);')
 pap.write_text(t, encoding='utf-8', newline='\n')
 
+
+# Apply the small set of AE API corrections already established by the NAF port.
+actor_h = common_dst / 'CommonLibF4' / 'include' / 'RE' / 'Bethesda' / 'Actor.h'
+t = actor_h.read_text(encoding='utf-8-sig')
+t = t.replace(
+    "class AIProcess\n\t{\n\tpublic:\n",
+    "class AIProcess\n\t{\n\tpublic:\n"
+    "\t\tvoid ClearCurrentPackage(RE::Actor* a_actor)\n\t\t{\n"
+    "\t\t\tusing func_t = decltype(&AIProcess::ClearCurrentPackage);\n"
+    "\t\t\tstatic REL::Relocation<func_t> func{ REL::RelocationID(241540, 2231582) };\n"
+    "\t\t\treturn func(this, a_actor);\n\t\t}\n\n"
+    "\t\tvoid ClearCurrentDataForProcess(RE::Actor* a_actor)\n\t\t{\n"
+    "\t\t\tusing func_t = decltype(&AIProcess::ClearCurrentDataForProcess);\n"
+    "\t\t\tstatic REL::Relocation<func_t> func{ REL::RelocationID(577581, 2232435) };\n"
+    "\t\t\treturn func(this, a_actor);\n\t\t}\n\n"
+)
+t = t.replace(
+    "static REL::Relocation<func_t> func{ REL::ID(1446774) };",
+    "static REL::Relocation<func_t> func{ REL::RelocationID(1446774, 2231704) };"
+)
+actor_anchor = "\t\tstatic constexpr auto FORM_ID{ ENUM_FORM_ID::kACHR };\n"
+if "void EvaluatePackage(bool a_commandMode" not in t:
+    t = t.replace(
+        actor_anchor,
+        actor_anchor +
+        "\n\t\tvoid EvaluatePackage(bool a_commandMode, bool a_force)\n\t\t{\n"
+        "\t\t\tusing func_t = decltype(&Actor::EvaluatePackage);\n"
+        "\t\t\tstatic REL::Relocation<func_t> func{ REL::RelocationID(1395257, 2229805) };\n"
+        "\t\t\treturn func(this, a_commandMode, a_force);\n\t\t}\n"
+    )
+actor_h.write_text(t, encoding='utf-8', newline='\n')
+
+npc_h = common_dst / 'CommonLibF4' / 'include' / 'RE' / 'Bethesda' / 'TESBoundAnimObjects.h'
+t = npc_h.read_text(encoding='utf-8-sig')
+needle = "\t\t[[nodiscard]] SEX GetSex() noexcept\n"
+if "float GetHeight(TESObjectREFR* a_refr" not in t:
+    t = t.replace(
+        needle,
+        "\t\tfloat GetHeight(TESObjectREFR* a_refr, TESRace* a_race)\n\t\t{\n"
+        "\t\t\tusing func_t = decltype(&TESNPC::GetHeight);\n"
+        "\t\t\tstatic REL::Relocation<func_t> func{ REL::RelocationID(674794, 2207473) };\n"
+        "\t\t\treturn func(this, a_refr, a_race);\n\t\t}\n\n" + needle
+    )
+npc_h.write_text(t, encoding='utf-8', newline='\n')
+
+refr_h = common_dst / 'CommonLibF4' / 'include' / 'RE' / 'Bethesda' / 'TESObjectREFRs.h'
+t = refr_h.read_text(encoding='utf-8-sig')
+t = t.replace(
+    "static REL::Relocation<func_t> func{ REL::ID(281170) };",
+    "static REL::Relocation<func_t> func{ REL::RelocationID(281170, 2200861) };"
+)
+old_link = """\t\tvoid SetLinkedRef(Actor* a_actor, BGSKeyword* a_keyword)
+\t\t{
+\t\t\tusing func_t = decltype(&TESObjectREFR::SetLinkedRef);
+\t\t\tstatic REL::Relocation<func_t> func{ REL::ID(192840) };
+\t\t\treturn func(this, a_actor, a_keyword);
+\t\t}"""
+new_link = """\t\tvoid SetLinkedRef(const TESObjectREFR* a_refr, BGSKeyword* a_keyword)
+\t\t{
+\t\t\tusing func_t = decltype(&TESObjectREFR::SetLinkedRef);
+\t\t\tstatic REL::Relocation<func_t> func{ REL::RelocationID(192840, 2202684) };
+\t\t\treturn func(this, a_refr, a_keyword);
+\t\t}"""
+t = t.replace(old_link, new_link)
+refr_h.write_text(t, encoding='utf-8', newline='\n')
+
+hud_h = common_dst / 'CommonLibF4' / 'include' / 'RE' / 'Bethesda' / 'SendHUDMessage.h'
+t = hud_h.read_text(encoding='utf-8-sig')
+if "inline void ClearMessages()" not in t:
+    t = t.replace(
+        "\t\tinline void ShowHUDMessage(",
+        "\t\tinline void ClearMessages()\n\t\t{\n"
+        "\t\t\tusing func_t = decltype(&ClearMessages);\n"
+        "\t\t\tstatic REL::Relocation<func_t> func{ REL::RelocationID(973227, 2222460) };\n"
+        "\t\t\treturn func();\n\t\t}\n\n"
+        "\t\tinline void ShowHUDMessage("
+    )
+hud_h.write_text(t, encoding='utf-8', newline='\n')
+
+precull_h = common_dst / 'CommonLibF4' / 'include' / 'RE' / 'Bethesda' / 'BSPreCulledObjects.h'
+t = precull_h.read_text(encoding='utf-8-sig')
+if "Get3DForID" not in t:
+    t = t.replace(
+        "\tpublic:\n",
+        "\tpublic:\n\t\tstatic void* Get3DForID(std::uint32_t a_id)\n\t\t{\n"
+        "\t\t\tusing func_t = decltype(&BSPreCulledObjects::Get3DForID);\n"
+        "\t\t\tstatic REL::Relocation<func_t> func{ REL::RelocationID(1087700, 2317330) };\n"
+        "\t\t\treturn func(a_id);\n\t\t}\n\n",
+        1
+    )
+precull_h.write_text(t, encoding='utf-8', newline='\n')
+
+# Bridge API migrations against the maintained AE CommonLib surface.
+utils = bridge_dst / 'Papyrus' / 'NAF_Utils.cpp'
+t = utils.read_text(encoding='utf-8-sig')
+t = t.replace("actor->ModifyKeyword(keyword, true);", "actor->AddKeyword(keyword);")
+t = t.replace("actor->ModifyKeyword(keyword, false);", "actor->RemoveKeyword(keyword);")
+t = t.replace("akActors[0]->GetSex() == RE::Actor::Sex::Female", "akActors[0]->GetNPC() && akActors[0]->GetNPC()->GetSex() == RE::SEX::kFemale")
+t = t.replace("actor->GetSex() == RE::Actor::Sex::Female", "actor->GetNPC() && actor->GetNPC()->GetSex() == RE::SEX::kFemale")
+t = t.replace("akActor->GetSex() == RE::Actor::Sex::Female", "akActor->GetNPC() && akActor->GetNPC()->GetSex() == RE::SEX::kFemale")
+t = t.replace("getActorsInRangeImpl(from, distance, 0xFFFFFFFF, includeDead, nullptr)", "getActorsInRangeImpl(from, static_cast<std::uint32_t>(distance), 0x7FFFFFFF, includeDead, nullptr)")
+utils.write_text(t, encoding='utf-8', newline='\n')
+
+pap = bridge_dst / 'Papyrus' / 'Papyrus.cpp'
+t = pap.read_text(encoding='utf-8-sig')
+t = t.replace("return obj->GetFullyLoaded3D()->GetFlags();", "return static_cast<int>(obj->GetFullyLoaded3D()->GetFlags());")
+t = t.replace("copy.push_back(flist->arrayOfForms[i]);", "copy.push_back(flist->arrayOfForms[static_cast<decltype(flist->arrayOfForms)::size_type>(i)]);")
+pap.write_text(t, encoding='utf-8', newline='\n')
+
+global_h = PLUGIN / 'src' / 'Data' / 'Global.h'
+t = global_h.read_text(encoding='utf-8-sig')
+t = t.replace('logger::info("Patched {} HeadParts.", count);', 'logger::info("Patched {} HeadParts.", count.load());')
+global_h.write_text(t, encoding='utf-8', newline='\n')
+
 os.environ['VCPKG_ROOT'] = os.environ.get('VCPKG_INSTALLATION_ROOT', r'C:\\vcpkg')
 build = PLUGIN / 'build-240'
 run(['cmake','-S',str(PLUGIN),'-B',str(build),'-G','Visual Studio 18 2026','-A','x64','-DCOPY_BUILD=OFF'])
