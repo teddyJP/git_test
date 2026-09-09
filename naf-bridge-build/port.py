@@ -144,6 +144,23 @@ tdh_t = tdh_t.replace(old_lookup, new_lookup)
 tdh_h.write_text(tdh_t, encoding='utf-8', newline='\n')
 print('Patched TESDataHandler::LookupForm to current AE direct form-ID path')
 
+# Fallout 4 AE 1.11.240: TESForm global form registries moved. These are used
+# by TESForm::GetFormByID/GetFormByEditorID after TESDataHandler resolves a form ID.
+tesforms_h = common_dst / 'CommonLibF4' / 'include' / 'RE' / 'Bethesda' / 'TESForms.h'
+tesforms_t = tesforms_h.read_text(encoding='utf-8-sig')
+tesform_repls = {
+    'REL::RelocationID(422985, 2689178)': 'REL::RelocationID(422985, 4796465)',
+    'REL::RelocationID(691815, 2689189)': 'REL::RelocationID(691815, 4796476)',
+    'REL::RelocationID(642758, 2689179)': 'REL::RelocationID(642758, 4796466)',
+    'REL::RelocationID(910917, 2689190)': 'REL::RelocationID(910917, 4796477)',
+}
+for old_id, new_id in tesform_repls.items():
+    if old_id not in tesforms_t:
+        raise SystemExit(f'Expected stale TESForm relocation {old_id} was not found')
+    tesforms_t = tesforms_t.replace(old_id, new_id)
+tesforms_h.write_text(tesforms_t, encoding='utf-8', newline='\\n')
+print('Patched TESForm global registry AE relocations')
+
 bridge_dst = PLUGIN / 'extern' / 'Bridge'
 if bridge_dst.exists(): shutil.rmtree(bridge_dst)
 shutil.copytree(BRIDGE / 'f4se-plugin' / 'extern' / 'Bridge', bridge_dst)
