@@ -57,7 +57,7 @@ old_bge = 'REL::RelocationID(1424022, 2688814)'
 new_bge = 'REL::RelocationID(1424022, 4796078)'
 if old_bge not in bste_t:
     raise SystemExit('Expected stale BSTGlobalEvent singleton relocation was not found')
-bste_h.write_text(bste_t.replace(old_bge, new_bge), encoding='utf-8', newline='\\n')
+bste_h.write_text(bste_t.replace(old_bge, new_bge), encoding='utf-8', newline='\n')
 print('Patched BSTGlobalEvent::Singleton AE relocation 2688814 -> 4796078')
 
 ui_h = common_dst / 'CommonLibF4' / 'include' / 'RE' / 'Bethesda' / 'UI.h'
@@ -66,7 +66,7 @@ old_ui = 'REL::RelocationID(548587, 2689028)'
 new_ui = 'REL::RelocationID(548587, 4796314)'
 if old_ui not in ui_t:
     raise SystemExit('Expected stale UI singleton relocation was not found')
-ui_h.write_text(ui_t.replace(old_ui, new_ui), encoding='utf-8', newline='\\n')
+ui_h.write_text(ui_t.replace(old_ui, new_ui), encoding='utf-8', newline='\n')
 print('Patched UI::Singleton AE relocation 2689028 -> 4796314')
 
 bridge_dst = PLUGIN / 'extern' / 'Bridge'
