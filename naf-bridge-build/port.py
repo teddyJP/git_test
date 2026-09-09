@@ -141,7 +141,7 @@ new_lookup = '''\t\tTESForm* LookupForm(TESFormID a_rawFormID, std::string_view 
 if old_lookup not in tdh_t:
     raise SystemExit('Expected legacy TESDataHandler::LookupForm implementation was not found')
 tdh_t = tdh_t.replace(old_lookup, new_lookup)
-tdh_h.write_text(tdh_t, encoding='utf-8', newline='\\n')
+tdh_h.write_text(tdh_t, encoding='utf-8', newline='\n')
 print('Patched TESDataHandler::LookupForm to current AE direct form-ID path')
 
 bridge_dst = PLUGIN / 'extern' / 'Bridge'
