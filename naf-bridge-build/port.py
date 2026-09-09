@@ -83,7 +83,7 @@ for old_id, new_id in ui_repls.items():
     if old_id not in ui_t:
         raise SystemExit(f'Expected stale UI relocation {old_id} was not found')
     ui_t = ui_t.replace(old_id, new_id)
-ui_h.write_text(ui_t, encoding='utf-8', newline='\\n')
+ui_h.write_text(ui_t, encoding='utf-8', newline='\n')
 print('Patched AE UI method relocations: 1401451/1436639/1519575/175796')
 
 # HUDModeEvent::GetEventSource was still using an NG-only single ID. On AE
