@@ -24,6 +24,19 @@ common_dst = PLUGIN / 'extern' / 'CommonLibF4'
 if common_dst.exists(): shutil.rmtree(common_dst)
 shutil.copytree(COMMON, common_dst, ignore=shutil.ignore_patterns('.git'))
 
+# Fallout 4 AE 1.11.240: alandtse/CommonLibF4 still carries the pre-AE
+# MemoryManager singleton relocation (2193197). Current AE CommonLibF4 uses
+# 4471522; the stale ID resolves into an unrelated Fallout4.exe function and
+# crashes while Papyrus NativeFunction objects allocate from the game heap.
+mem_h = common_dst / 'CommonLibF4' / 'include' / 'RE' / 'Bethesda' / 'MemoryManager.h'
+mem_t = mem_h.read_text(encoding='utf-8-sig')
+old_mm = 'REL::RelocationID(343176, 2193197)'
+new_mm = 'REL::RelocationID(343176, 4471522)'
+if old_mm not in mem_t:
+    raise SystemExit('Expected stale MemoryManager singleton relocation was not found')
+mem_h.write_text(mem_t.replace(old_mm, new_mm), encoding='utf-8', newline='\\n')
+print('Patched MemoryManager::Singleton AE relocation 2193197 -> 4471522')
+
 bridge_dst = PLUGIN / 'extern' / 'Bridge'
 if bridge_dst.exists(): shutil.rmtree(bridge_dst)
 shutil.copytree(BRIDGE / 'f4se-plugin' / 'extern' / 'Bridge', bridge_dst)
