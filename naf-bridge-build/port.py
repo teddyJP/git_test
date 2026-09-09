@@ -37,6 +37,18 @@ if old_mm not in mem_t:
 mem_h.write_text(mem_t.replace(old_mm, new_mm), encoding='utf-8', newline='\n')
 print('Patched MemoryManager::Singleton AE relocation 2193197 -> 4471522')
 
+# Fallout 4 AE 1.11.240: GameVM singleton moved as well. The stale NG-era
+# relocation resolves to an invalid pseudo-object, then GetVM() reads +0xB0
+# and crashes during Papyrus native registration.
+game_h = common_dst / 'CommonLibF4' / 'include' / 'RE' / 'Bethesda' / 'GameScript.h'
+game_t = game_h.read_text(encoding='utf-8-sig')
+old_gvm = 'REL::RelocationID(996227, 2689134)'
+new_gvm = 'REL::RelocationID(996227, 4796420)'
+if old_gvm not in game_t:
+    raise SystemExit('Expected stale GameVM singleton relocation was not found')
+game_h.write_text(game_t.replace(old_gvm, new_gvm), encoding='utf-8', newline='\\n')
+print('Patched GameVM::Singleton AE relocation 2689134 -> 4796420')
+
 bridge_dst = PLUGIN / 'extern' / 'Bridge'
 if bridge_dst.exists(): shutil.rmtree(bridge_dst)
 shutil.copytree(BRIDGE / 'f4se-plugin' / 'extern' / 'Bridge', bridge_dst)
