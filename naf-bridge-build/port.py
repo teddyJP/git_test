@@ -34,7 +34,7 @@ old_mm = 'REL::RelocationID(343176, 2193197)'
 new_mm = 'REL::RelocationID(343176, 4471522)'
 if old_mm not in mem_t:
     raise SystemExit('Expected stale MemoryManager singleton relocation was not found')
-mem_h.write_text(mem_t.replace(old_mm, new_mm), encoding='utf-8', newline='\\n')
+mem_h.write_text(mem_t.replace(old_mm, new_mm), encoding='utf-8', newline='\n')
 print('Patched MemoryManager::Singleton AE relocation 2193197 -> 4471522')
 
 bridge_dst = PLUGIN / 'extern' / 'Bridge'
