@@ -78,7 +78,7 @@ old_hud_event = 'static REL::Relocation<EventSource_t**> singleton{ REL::ID(6831
 new_hud_event = 'static REL::Relocation<EventSource_t**> singleton{ REL::RelocationID(683142, 4801988) };'
 if old_hud_event not in events_t:
     raise SystemExit('Expected stale HUDModeEvent event-source relocation was not found')
-events_h.write_text(events_t.replace(old_hud_event, new_hud_event), encoding='utf-8', newline='\\n')
+events_h.write_text(events_t.replace(old_hud_event, new_hud_event), encoding='utf-8', newline='\n')
 print('Patched HUDModeEvent::GetEventSource AE relocation 683142 -> 4801988')
 
 bridge_dst = PLUGIN / 'extern' / 'Bridge'
