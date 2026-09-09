@@ -110,6 +110,40 @@ if old_tdh not in tdh_t:
 tdh_h.write_text(tdh_t.replace(old_tdh, new_tdh), encoding='utf-8', newline='\n')
 print('Patched TESDataHandler::Singleton AE relocation 2688883 -> 4796135')
 
+# Match current AE CommonLib TESDataHandler form lookup. The old implementation
+# routes LookupForm through LookupLoadedFile()/compiled-file helper machinery,
+# which still contains stale runtime-dependent assumptions and produces the
+# bogus 0x700000008 pointer seen while resolving DLCNukaWorld.esm:A1A6.
+old_lookup = '''\t\tTESForm* LookupForm(TESFormID a_rawFormID, std::string_view a_modName)
+\t\t{
+\t\t\tauto file = LookupLoadedFile(a_modName);
+\t\t\tif (!file.first) {
+\t\t\t\treturn nullptr;
+\t\t\t}
+
+\t\t\tuint32_t formID = 0;
+\t\t\tif (file.second) {
+\t\t\t\tformID = file.first->compileIndex << 24;
+\t\t\t\tformID += (a_rawFormID & 0x00FFFFFF);
+\t\t\t} else {
+\t\t\t\tformID = 0xFE000000;
+\t\t\t\tformID += file.first->smallFileCompileIndex << 12;
+\t\t\t\tformID += (a_rawFormID & 0x00000FFF);
+\t\t\t}
+
+\t\t\treturn TESForm::GetFormByID(formID);
+\t\t}'''
+new_lookup = '''\t\tTESForm* LookupForm(TESFormID a_rawFormID, std::string_view a_modName)
+\t\t{
+\t\t\tauto formID = LookupFormID(a_rawFormID, a_modName);
+\t\t\treturn formID != 0 ? TESForm::GetFormByID(formID) : nullptr;
+\t\t}'''
+if old_lookup not in tdh_t:
+    raise SystemExit('Expected legacy TESDataHandler::LookupForm implementation was not found')
+tdh_t = tdh_t.replace(old_lookup, new_lookup)
+tdh_h.write_text(tdh_t, encoding='utf-8', newline='\\n')
+print('Patched TESDataHandler::LookupForm to current AE direct form-ID path')
+
 bridge_dst = PLUGIN / 'extern' / 'Bridge'
 if bridge_dst.exists(): shutil.rmtree(bridge_dst)
 shutil.copytree(BRIDGE / 'f4se-plugin' / 'extern' / 'Bridge', bridge_dst)
