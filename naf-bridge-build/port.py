@@ -158,7 +158,7 @@ for old_id, new_id in tesform_repls.items():
     if old_id not in tesforms_t:
         raise SystemExit(f'Expected stale TESForm relocation {old_id} was not found')
     tesforms_t = tesforms_t.replace(old_id, new_id)
-tesforms_h.write_text(tesforms_t, encoding='utf-8', newline='\\n')
+tesforms_h.write_text(tesforms_t, encoding='utf-8', newline='\n')
 print('Patched TESForm global registry AE relocations')
 
 bridge_dst = PLUGIN / 'extern' / 'Bridge'
