@@ -69,6 +69,18 @@ if old_ui not in ui_t:
 ui_h.write_text(ui_t.replace(old_ui, new_ui), encoding='utf-8', newline='\n')
 print('Patched UI::Singleton AE relocation 2689028 -> 4796314')
 
+# HUDModeEvent::GetEventSource was still using an NG-only single ID. On AE
+# 1.11.240 that resolves to unrelated static data and causes RegisterSink() to
+# treat strings like \"PropertyKey\" as a spinlock/event source.
+events_h = common_dst / 'CommonLibF4' / 'include' / 'RE' / 'Bethesda' / 'Events.h'
+events_t = events_h.read_text(encoding='utf-8-sig')
+old_hud_event = 'static REL::Relocation<EventSource_t**> singleton{ REL::ID(683142) };'
+new_hud_event = 'static REL::Relocation<EventSource_t**> singleton{ REL::RelocationID(683142, 4801988) };'
+if old_hud_event not in events_t:
+    raise SystemExit('Expected stale HUDModeEvent event-source relocation was not found')
+events_h.write_text(events_t.replace(old_hud_event, new_hud_event), encoding='utf-8', newline='\\n')
+print('Patched HUDModeEvent::GetEventSource AE relocation 683142 -> 4801988')
+
 bridge_dst = PLUGIN / 'extern' / 'Bridge'
 if bridge_dst.exists(): shutil.rmtree(bridge_dst)
 shutil.copytree(BRIDGE / 'f4se-plugin' / 'extern' / 'Bridge', bridge_dst)
