@@ -162,6 +162,76 @@ for old_id, new_id in tesform_repls.items():
 tesforms_h.write_text(tesforms_t, encoding='utf-8', newline='\n')
 print('Patched TESForm global registry AE relocations')
 
+# Broader 1.11.240 CommonLib audit: patch high-risk globals/methods that NAF
+# reaches during menu use, save loading, scene startup, camera changes, HUD,
+# equipment operations, and actor/form processing.
+def patch_file_rel(path, replacements, label):
+    p = common_dst / 'CommonLibF4' / 'include' / 'RE' / 'Bethesda' / path
+    txt = p.read_text(encoding='utf-8-sig')
+    for old, new in replacements.items():
+        if old not in txt:
+            raise SystemExit(f'Expected stale {label} relocation was not found: {old}')
+        txt = txt.replace(old, new)
+    p.write_text(txt, encoding='utf-8', newline='\\n')
+    print(f'Patched {label}')
+
+patch_file_rel('PlayerCharacter.h', {
+    'REL::RelocationID(303410, 2690919)': 'REL::RelocationID(303410, 4798212)',
+}, 'PlayerCharacter::Singleton')
+
+patch_file_rel('TESCamera.h', {
+    'REL::RelocationID(1171980, 2688801)': 'REL::RelocationID(1171980, 4796065)',
+}, 'PlayerCamera::Singleton')
+
+patch_file_rel('ControlMap.h', {
+    'REL::RelocationID(325206, 2692014)': 'REL::RelocationID(325206, 4799307)',
+    'REL::RelocationID(1270079, 0)': 'REL::RelocationID(1270079, 4491359)',
+}, 'ControlMap AE singleton/text-entry')
+
+patch_file_rel('PlayerControls.h', {
+    'REL::RelocationID(544871, 2692013)': 'REL::RelocationID(544871, 4799306)',
+}, 'PlayerControls::Singleton')
+
+patch_file_rel('ProcessLists.h', {
+    'REL::RelocationID(1569706, 2688869)': 'REL::RelocationID(1569706, 4796160)',
+}, 'ProcessLists::Singleton')
+
+patch_file_rel('UIMessageQueue.h', {
+    'REL::RelocationID(82123, 2689091)': 'REL::RelocationID(82123, 4796377)',
+}, 'UIMessageQueue::Singleton')
+
+patch_file_rel('Actor.h', {
+    'REL::RelocationID(1174340, 2690994)': 'REL::RelocationID(1174340, 4798287)',
+}, 'ActorEquipManager::Singleton')
+
+patch_file_rel('BSScaleformManager.h', {
+    'REL::ID(106578)': 'REL::ID(4796889)',
+    'REL::ID(1526234)': 'REL::ID(2287422)',
+    'REL::ID(1191277)': 'REL::ID(2287428)',
+    'REL::ID(206895)': 'REL::ID(4494254)',
+    'REL::ID(1403529)': 'REL::ID(2284938)',
+}, 'BSScaleform AE manager/renderer')
+
+patch_file_rel('InventoryUserUIUtils.h', {
+    'REL::ID(1320952)': 'REL::ID(2249706)',
+    'REL::ID(1227993)': 'REL::ID(2249707)',
+}, 'UIUtils AE sound functions')
+
+patch_file_rel('SendHUDMessage.h', {
+    'REL::ID(1495042)': 'REL::ID(2222444)',
+    'REL::ID(1321764)': 'REL::ID(2222443)',
+    'REL::ID(361745)': 'REL::ID(2222459)',
+}, 'SendHUDMessage AE HUD-mode functions')
+
+# EventProxy uses TESHitEvent directly; the 1.11.221-era AE side is stale on 1.11.240.
+events_t = events_h.read_text(encoding='utf-8-sig')
+old_hit = 'REL::RelocationID(989868, 1411899)'
+new_hit = 'REL::RelocationID(989868, 2201886)'
+if old_hit not in events_t:
+    raise SystemExit('Expected stale TESHitEvent relocation was not found')
+events_h.write_text(events_t.replace(old_hit, new_hit), encoding='utf-8', newline='\\n')
+print('Patched TESHitEvent::GetEventSource AE relocation 1411899 -> 2201886')
+
 bridge_dst = PLUGIN / 'extern' / 'Bridge'
 if bridge_dst.exists(): shutil.rmtree(bridge_dst)
 shutil.copytree(BRIDGE / 'f4se-plugin' / 'extern' / 'Bridge', bridge_dst)
