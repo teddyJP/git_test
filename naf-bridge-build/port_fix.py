@@ -67,7 +67,9 @@ gh.write_text(gt, encoding='utf-8', newline='\n')
 mainp = PLUGIN / 'src' / 'main.cpp'
 mt = mainp.read_text(encoding='utf-8-sig')
 if 'int PRINT_LOG = 1;' not in mt:
-    mt = mt.replace('bool g_gameDataReady = false;', 'bool g_gameDataReady = false;\nint PRINT_LOG = 1;', 1)
+    mt = mt.replace('bool g_gameDataReady = false;', 'bool g_gameDataReady = false;\nint PRINT_LOG = 1;\nRE::BSScript::IVirtualMachine* g_VM = nullptr;', 1)
+elif 'RE::BSScript::IVirtualMachine* g_VM' not in mt:
+    mt = mt.replace('int PRINT_LOG = 1;', 'int PRINT_LOG = 1;\nRE::BSScript::IVirtualMachine* g_VM = nullptr;', 1)
 mainp.write_text(mt, encoding='utf-8', newline='\n')
 
 print('Merged Bridge API/Papyrus surfaces plus AE-compatible overlay support', flush=True)
