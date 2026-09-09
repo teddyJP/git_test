@@ -172,7 +172,7 @@ def patch_file_rel(path, replacements, label):
         if old not in txt:
             raise SystemExit(f'Expected stale {label} relocation was not found: {old}')
         txt = txt.replace(old, new)
-    p.write_text(txt, encoding='utf-8', newline='\\n')
+    p.write_text(txt, encoding='utf-8', newline='\n')
     print(f'Patched {label}')
 
 patch_file_rel('PlayerCharacter.h', {
@@ -229,7 +229,7 @@ old_hit = 'REL::RelocationID(989868, 1411899)'
 new_hit = 'REL::RelocationID(989868, 2201886)'
 if old_hit not in events_t:
     raise SystemExit('Expected stale TESHitEvent relocation was not found')
-events_h.write_text(events_t.replace(old_hit, new_hit), encoding='utf-8', newline='\\n')
+events_h.write_text(events_t.replace(old_hit, new_hit), encoding='utf-8', newline='\n')
 print('Patched TESHitEvent::GetEventSource AE relocation 1411899 -> 2201886')
 
 bridge_dst = PLUGIN / 'extern' / 'Bridge'
