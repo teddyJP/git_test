@@ -98,6 +98,18 @@ if old_hud_event not in events_t:
 events_h.write_text(events_t.replace(old_hud_event, new_hud_event), encoding='utf-8', newline='\n')
 print('Patched HUDModeEvent::GetEventSource AE relocation 683142 -> 4801988')
 
+# Fallout 4 AE 1.11.240: TESDataHandler singleton moved. The stale AE value
+# 2688883 resolves to a bogus pseudo-object; form/plugin lookups then read the
+# loaded-mod arrays at +0xFC0/+0xFD0 and crash while linking NAF game data.
+tdh_h = common_dst / 'CommonLibF4' / 'include' / 'RE' / 'Bethesda' / 'TESDataHandler.h'
+tdh_t = tdh_h.read_text(encoding='utf-8-sig')
+old_tdh = 'REL::RelocationID(711558, 2688883)'
+new_tdh = 'REL::RelocationID(711558, 4796135)'
+if old_tdh not in tdh_t:
+    raise SystemExit('Expected stale TESDataHandler singleton relocation was not found')
+tdh_h.write_text(tdh_t.replace(old_tdh, new_tdh), encoding='utf-8', newline='\\n')
+print('Patched TESDataHandler::Singleton AE relocation 2688883 -> 4796135')
+
 bridge_dst = PLUGIN / 'extern' / 'Bridge'
 if bridge_dst.exists(): shutil.rmtree(bridge_dst)
 shutil.copytree(BRIDGE / 'f4se-plugin' / 'extern' / 'Bridge', bridge_dst)
