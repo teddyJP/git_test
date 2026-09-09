@@ -46,7 +46,7 @@ old_gvm = 'REL::RelocationID(996227, 2689134)'
 new_gvm = 'REL::RelocationID(996227, 4796420)'
 if old_gvm not in game_t:
     raise SystemExit('Expected stale GameVM singleton relocation was not found')
-game_h.write_text(game_t.replace(old_gvm, new_gvm), encoding='utf-8', newline='\\n')
+game_h.write_text(game_t.replace(old_gvm, new_gvm), encoding='utf-8', newline='\n')
 print('Patched GameVM::Singleton AE relocation 2689134 -> 4796420')
 
 bridge_dst = PLUGIN / 'extern' / 'Bridge'
