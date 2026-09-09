@@ -49,6 +49,26 @@ if old_gvm not in game_t:
 game_h.write_text(game_t.replace(old_gvm, new_gvm), encoding='utf-8', newline='\n')
 print('Patched GameVM::Singleton AE relocation 2689134 -> 4796420')
 
+# Fallout 4 AE 1.11.240: old CommonLib global-event/UI singleton IDs point at
+# unrelated data. They are touched during kGameDataReady HUD/event setup.
+bste_h = common_dst / 'CommonLibF4' / 'include' / 'RE' / 'Bethesda' / 'BSTEvent.h'
+bste_t = bste_h.read_text(encoding='utf-8-sig')
+old_bge = 'REL::RelocationID(1424022, 2688814)'
+new_bge = 'REL::RelocationID(1424022, 4796078)'
+if old_bge not in bste_t:
+    raise SystemExit('Expected stale BSTGlobalEvent singleton relocation was not found')
+bste_h.write_text(bste_t.replace(old_bge, new_bge), encoding='utf-8', newline='\\n')
+print('Patched BSTGlobalEvent::Singleton AE relocation 2688814 -> 4796078')
+
+ui_h = common_dst / 'CommonLibF4' / 'include' / 'RE' / 'Bethesda' / 'UI.h'
+ui_t = ui_h.read_text(encoding='utf-8-sig')
+old_ui = 'REL::RelocationID(548587, 2689028)'
+new_ui = 'REL::RelocationID(548587, 4796314)'
+if old_ui not in ui_t:
+    raise SystemExit('Expected stale UI singleton relocation was not found')
+ui_h.write_text(ui_t.replace(old_ui, new_ui), encoding='utf-8', newline='\\n')
+print('Patched UI::Singleton AE relocation 2689028 -> 4796314')
+
 bridge_dst = PLUGIN / 'extern' / 'Bridge'
 if bridge_dst.exists(): shutil.rmtree(bridge_dst)
 shutil.copytree(BRIDGE / 'f4se-plugin' / 'extern' / 'Bridge', bridge_dst)
