@@ -107,7 +107,7 @@ old_tdh = 'REL::RelocationID(711558, 2688883)'
 new_tdh = 'REL::RelocationID(711558, 4796135)'
 if old_tdh not in tdh_t:
     raise SystemExit('Expected stale TESDataHandler singleton relocation was not found')
-tdh_h.write_text(tdh_t.replace(old_tdh, new_tdh), encoding='utf-8', newline='\\n')
+tdh_h.write_text(tdh_t.replace(old_tdh, new_tdh), encoding='utf-8', newline='\n')
 print('Patched TESDataHandler::Singleton AE relocation 2688883 -> 4796135')
 
 bridge_dst = PLUGIN / 'extern' / 'Bridge'
