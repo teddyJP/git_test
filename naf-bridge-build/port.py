@@ -132,6 +132,13 @@ if "void EvaluatePackage(bool a_commandMode" not in t:
         "\t\t\tstatic REL::Relocation<func_t> func{ REL::RelocationID(1395257, 2229805) };\n"
         "\t\t\treturn func(this, a_commandMode, a_force);\n\t\t}\n"
     )
+# Current AE CommonLib no longer uses Actor::GetActorHandle's stale direct
+# relocation (1145222). Constructing ActorHandle from the Actor routes through
+# BSPointerHandleManagerInterface<Actor>::GetHandle (AE ID 2188676).
+t = t.replace(
+    "ActorHandle GetActorHandle()\n\t\t{\n\t\t\tusing func_t = decltype(&Actor::GetActorHandle);\n\t\t\tstatic REL::Relocation<func_t> func{ REL::ID(1145222) };\n\t\t\treturn func(this);\n\t\t}",
+    "ActorHandle GetActorHandle()\n\t\t{\n\t\t\treturn ActorHandle(this);\n\t\t}"
+)
 actor_h.write_text(t, encoding='utf-8', newline='\n')
 
 npc_h = common_dst / 'CommonLibF4' / 'include' / 'RE' / 'Bethesda' / 'TESBoundAnimObjects.h'
