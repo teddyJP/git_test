@@ -69,6 +69,23 @@ if old_ui not in ui_t:
 ui_h.write_text(ui_t.replace(old_ui, new_ui), encoding='utf-8', newline='\n')
 print('Patched UI::Singleton AE relocation 2689028 -> 4796314')
 
+# Fallout 4 AE 1.11.240: several UI member functions in the old CommonLib
+# header still use NG-only IDs. RegisterMenu is hit during NAF HUD/menu setup;
+# the others are patched at the same time because current AE IDs are known.
+ui_t = ui_h.read_text(encoding='utf-8-sig')
+ui_repls = {
+    'REL::ID(1401451)': 'REL::RelocationID(1401451, 2284757)',  # CustomRendererHasQuads
+    'REL::ID(1436639)': 'REL::RelocationID(1436639, 2284772)',  # RefreshCursor
+    'REL::ID(1519575)': 'REL::RelocationID(1519575, 2284766)',  # RegisterMenu
+    'REL::ID(175796)':  'REL::RelocationID(175796, 2284768)',   # UpdateControllerType
+}
+for old_id, new_id in ui_repls.items():
+    if old_id not in ui_t:
+        raise SystemExit(f'Expected stale UI relocation {old_id} was not found')
+    ui_t = ui_t.replace(old_id, new_id)
+ui_h.write_text(ui_t, encoding='utf-8', newline='\\n')
+print('Patched AE UI method relocations: 1401451/1436639/1519575/175796')
+
 # HUDModeEvent::GetEventSource was still using an NG-only single ID. On AE
 # 1.11.240 that resolves to unrelated static data and causes RegisterSink() to
 # treat strings like \"PropertyKey\" as a spinlock/event source.
